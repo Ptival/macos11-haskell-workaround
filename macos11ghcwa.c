@@ -94,14 +94,22 @@ static char** fix_ghc_argv (const char* topdir, char* const argv[])
     return new_argv;
 }
 
+// in nix, the folder can look something like "prefix-ghc-8.8.4-env/"
 static char* get_ghc_ver (const char* folder)
 {
     const int len = strlen (folder);
     int i = len - 2;
     while (i > 1 && folder[i - 1] != '/')
         --i;
-    char* result = strdup (folder + i);
-    result[len - i - 1] = '\0';
+    char* intermediate = strdup (folder + i);
+    char* result = intermediate;
+    while (memcmp (result, "ghc-", 4) != 0 && result < intermediate + strlen (intermediate))
+        result++;
+    int end = 4; // skipping "ghc-"
+    int result_len = strlen (result);
+    while (result[end] != '-' && end < result_len)
+        end++;
+    result[end] = '\0';
     return result;
 }
 
